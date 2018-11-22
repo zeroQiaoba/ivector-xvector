@@ -19,18 +19,35 @@
 . ./path.sh
 set -e
 
-if [ $# != 1 ] ; then 
-	echo "USAGE: $0 wav_path" 
-	echo " e.g.: $0 ./wav" 
+if [ $# != 2 ] ; then 
+	echo "USAGE: $0 wav_path(or speaker_path) type"
+	exit 1;
+fi
+
+if [[ "$2" = "1" ]] ; then 
+	wavdir=$1
+	DataPre=1
+	echo "1: without speaker"
+elif [[ "$2" = "2" ]] ; then 
+	speakerPath=$1
+	DataPre=2
+	echo "2: with speaker"
+else
+	echo "Error: type should set to be 1 or 2" 
 	exit 1;
 fi 
+
 
 if [ -d "./data" ];then
 	rm -rf ./data
 fi
 
-#wavdir=`pwd`/wav
-wavdir=$1
+
+FIXDATA=1
+FeatureForMfcc=1
+VAD=1
+EXTRACT=1
+
 datadir=`pwd`/data
 logdir=`pwd`/data/log
 featdir=`pwd`/data/feat
@@ -38,18 +55,21 @@ nnet_dir=`pwd`/exp/xvector_nnet_1a
 
 . parse_options.sh || exit 1;
 
-DataPre=1
-FIXDATA=1
-FeatureForMfcc=1
-VAD=1
-EXTRACT=1
-
 if [ $DataPre -eq 1 ]; then
 	echo ==========================================
 	echo "get utt2spk, DataPre start on" `date`
 	echo ==========================================
 
 	python make_data.py $wavdir $datadir
+	utils/utt2spk_to_spk2utt.pl $datadir/utt2spk > $datadir/spk2utt || exit 1
+	utils/spk2utt_to_utt2spk.pl $datadir/spk2utt > $datadir/utt2spk || exit 1
+
+	echo ===== data preparatin finished successfully `date`==========
+else
+	echo ==========================================
+	echo "get utt2spk, DataPre start on" `date`
+	echo ==========================================
+	python make_data_speaker.py $speakerPath $datadir
 	utils/utt2spk_to_spk2utt.pl $datadir/utt2spk > $datadir/spk2utt || exit 1
 	utils/spk2utt_to_utt2spk.pl $datadir/spk2utt > $datadir/utt2spk || exit 1
 
@@ -63,7 +83,7 @@ if [ $FIXDATA -eq 1 ]; then
 	echo ==========================================
     utils/fix_data_dir.sh $datadir
 	echo ====== fix_data_dir finished successfully `date` ==========
- fi
+fi
 
 
 if [ $FeatureForMfcc -eq 1 ]; then

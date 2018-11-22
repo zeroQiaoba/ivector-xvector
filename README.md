@@ -34,7 +34,7 @@
 
 `format_norm.py`: change ark format to npz format
 
-## Function 1: Extract features, then classify on Random Forest
+## Extract features: ivector and xvector
 
 ### Step 0: Preparation
 
@@ -55,11 +55,28 @@ ln -s $KALDI_ROOT/egs/sre16/v2/utils ./
 
 Refers to [pre-trained xvector model in kaldi](http://www.kaldi-asr.org/models/m3) and [kaidi-sre-code](https://github.com/kaldi-asr/kaldi/tree/master/egs/sre16)
 
-Run `enroll.sh` to extract ivector
+- Extract ivector: cd `ivector` and run `enroll.sh` to extract ivector
 
 ```sh
 bash enroll.sh wav_path
 # for example: bash enroll.sh ./wav
+```
+
+- Extract xvector: cd `xvector` and run `enroll.sh` to extract ivector
+
+```sh
+## Case 1: extract xvector without speaker infos
+#          for example: bash enroll.sh ./wav 1
+bash enroll.sh wav_path 1
+
+## Case 2: extract xvector with speaker infos
+####Step 1: Generate speaker.txt files
+####Only suitable for files like 'wav_root/speaker_id/wav_name'
+####Other format, you should write your own generate_speaker.py
+python generate_speaker.py wav_dir speaker.txt
+####Step 2: extract xvector with speaker infos
+####For example, bash enroll.sh ./speaker.txt 2
+bash enroll.sh ./speaker.txt 2
 ```
 
 ### Step 2: Read generate ivector and xvector
@@ -86,22 +103,6 @@ $KALDI_ROOT/src/bin/copy-vector ark:xvector/data/feat/xvectors_enroll_mfcc/xvect
 python format_norm.py --vector_path='xvector.txt' --save_path='x_vector.npz'
 python format_norm.py --vector_path='ivector.txt' --save_path='i_vector.npz'
 ```
-
-## Function 2: Only for iemocap. Extract xvector, with PLDA
-
-Enter `xvector/`
-
-`speaker.npz` contains:
-
-- train_datas: has {''speaker'' and "wav_name"}
-- test_datas:  has {''speaker'' and "wav_name"}
-
-```sh
-## only for iemocap (i.e. bash enroll_test_iemocap.sh wav_path speaker_path)
-bash enroll_test_iemocap.sh ../../ICASSP5/database/wav ../../ICASSP5/database/speaker.npz
-```
-
-
 
 # Other summary
 

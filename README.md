@@ -2,7 +2,7 @@
 
 ## Files List
 
-- `ivector/`
+ `ivector/`
   - `conf/`: configure file for mfcc and vad
   - `wav/`: test audio  (you can also use your own wav path, see **Step 1**)
     - Only supprot flac (install flac), wav and sph (install sph2pipe )
